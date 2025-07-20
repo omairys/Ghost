@@ -1,0 +1,45 @@
+# Docker Compose PRODUCTION para Ghost - Configuración Segura
+# Ideal para Render.com u otros servicios de hosting
+
+services:
+  ghost:
+    image: ghost:latest
+    ports:
+      - "2368:2368"
+    environment:
+      # URL del sitio (cambiar por tu dominio real)
+      url: ${GHOST_URL:-http://localhost:2368}
+      
+      # Configuración de base de datos SQLite (más segura)
+      database__client: sqlite3
+      database__connection__filename: /var/lib/ghost/content/data/ghost.db
+      database__useNullAsDefault: true
+      database__debug: false
+      
+      # Configuración de correo (evita el warning)
+      mail__transport: Direct
+      mail__from: ${GHOST_MAIL_FROM:-noreply@yourdomain.com}
+      
+      # Configuración de seguridad
+      NODE_ENV: production
+      logging__level: info
+      logging__rotation__enabled: true
+      
+      # Configuración de contenido
+      paths__contentPath: /var/lib/ghost/content
+      
+    volumes:
+      # Volumen persistente para TODO el contenido - MODO SEGURO
+      - ./ghost-data:/var/lib/ghost/content
+      
+    restart: unless-stopped
+    
+    # Configuración de salud
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:2368/ghost/api/admin/site/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# No necesitamos definir volúmenes externos ya que usamos bind mounts directos

@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: ghost-blog
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free  # Plan gratuito específico
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: database__client
+        value: sqlite3
+      - key: GHOST_DATABASE_PATH
+        value: /opt/render/project/src/ghost-data/data/ghost.db
+      - key: database__useNullAsDefault
+        value: "true"
+      - key: database__debug
+        value: "false"
+      - key: mail__transport
+        value: Direct
+      - key: mail__from
+        value: noreply@yourdomain.com
+      - key: url
+        value: https://your-site.onrender.com
+    # CRÍTICO: Configuración del disco persistente
+    disk:
+      name: ghost-data
+      mountPath: /opt/render/project/src/ghost-data
+      sizeGB: 1
