@@ -1,8 +1,4 @@
-# 🚀 Ghost - SIMPLE
-
-Solo 4 archivos. Todo lo que necesitas.
-
-## � Desarrollo Local (SÚPER FÁCIL)
+# 🚀 Ghost - Lite
 
 ```bash
 # Iniciar Ghost
@@ -21,7 +17,7 @@ Solo 4 archivos. Todo lo que necesitas.
 
 ---
 
-## 🚀 Render.com (Producción - GRATUITO)
+## 🚀 Render.com (Producción - Free Tier)
 
 ### 1. Crear Web Service en Render
 - Conecta este repositorio de GitHub
@@ -42,15 +38,12 @@ url=https://tu-app.onrender.com
 
 ---
 
-## � Solo 4 archivos importantes:
+## 📁 Archivos importantes:
 
-✅ **ESTOS SÍ**:
-- `Dockerfile.render` → Render.com
+- `Dockerfile` → Render.com
 - `docker-compose.simple.yml` → Local
 - `start-ghost.sh` → Scripts
 - `README-SIMPLE.md` → Este archivo
-
-❌ **Ignora todo lo demás**
 
 ---
 
