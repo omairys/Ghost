@@ -24,17 +24,19 @@ fi
 mkdir -p ./ghost-data ./backups
 
 show_help() {
-    echo "🚀 Ghost - Script Universal"
+    echo "🚀 Ghost - Script Universal (Supabase + SQLite)"
     echo ""
     echo "Comandos:"
-    echo "  start     Iniciar Ghost con backup automático"
+    echo "  start     Iniciar Ghost (Supabase en Render, SQLite local)"
     echo "  stop      Detener Ghost"
-    echo "  restart   Reiniciar con backup"
+    echo "  restart   Reiniciar Ghost"
     echo "  logs      Ver logs"
-    echo "  backup    Crear backup manual"
-    echo "  restore   Restaurar desde backup"
+    echo "  backup    Crear backup (solo SQLite local)"
+    echo "  restore   Restaurar desde backup (solo SQLite local)" 
     echo "  status    Ver estado y info"
     echo "  clean     Limpiar todo (¡PELIGRO!)"
+    echo ""
+    echo "📊 Supabase: Backups automáticos, no necesitas backup manual"
 }
 
 start_ghost() {
@@ -74,9 +76,10 @@ create_backup() {
     local type=${1:-manual}
     local date=$(date +%Y%m%d_%H%M%S)
     
+    # Solo hacer backup para SQLite local
     if [ -f "./ghost-data/data/ghost.db" ]; then
         cp "./ghost-data/data/ghost.db" "./backups/ghost_${type}_${date}.db"
-        log "✅ Backup: ghost_${type}_${date}.db"
+        log "✅ Backup SQLite: ghost_${type}_${date}.db"
         
         # Mantener últimos 10 backups
         ls -t ./backups/ghost_*.db | tail -n +11 | xargs rm -f 2>/dev/null || true
@@ -84,7 +87,8 @@ create_backup() {
         local size=$(du -h "./backups/ghost_${type}_${date}.db" | cut -f1)
         log "Tamaño: $size"
     else
-        warn "Base de datos no encontrada"
+        warn "SQLite no encontrado (probablemente usando Supabase PostgreSQL)"
+        warn "📊 Supabase maneja backups automáticamente - no necesitas backup manual"
     fi
 }
 

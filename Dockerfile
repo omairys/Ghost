@@ -1,91 +1,106 @@
-# Dockerfile UNIVERSAL para Ghost - Se adapta automáticamente a recursos disponibles
-# Funciona tanto en desarrollo local como en Render FREE (0.1 CPU, 512MB)
+# Dockerfile UNIVERSAL para Ghost - Supabase PostgreSQL + SQLite híbrido
+# Funciona con Supabase (Render FREE) y SQLite (desarrollo local)
 FROM ghost:alpine
 
-# Variables de entorno base para SQLite
+# Variables de entorno base - Detección automática de DB
 ENV NODE_ENV=production
-ENV database__client=sqlite3
+
+# Configuración híbrida: PostgreSQL (Supabase) o SQLite (local)
+ENV database__client=${DATABASE_CLIENT:-sqlite3}
+ENV database__connection__host=${DATABASE_HOST:-}
+ENV database__connection__user=${DATABASE_USER:-postgres}
+ENV database__connection__password=${DATABASE_PASSWORD:-}
+ENV database__connection__database=${DATABASE_NAME:-postgres}
+ENV database__connection__port=${DATABASE_PORT:-5432}
+ENV database__connection__ssl=${DATABASE_SSL:-true}
+
+# Fallback a SQLite para desarrollo local
+ENV database__connection__filename=${GHOST_DATABASE_PATH:-/var/lib/ghost/content/data/ghost.db}
 ENV database__useNullAsDefault=true
 ENV database__debug=false
+
+# Configuración SSL para Supabase
+ENV database__connection__ssl__rejectUnauthorized=false
 
 # Configuración de correo para evitar warnings
 ENV mail__transport=Direct
 ENV mail__from=noreply@yourdomain.com
 
-# Auto-detectar limitaciones de recursos y optimizar automáticamente
 # Optimizado para Render FREE (0.1 CPU, 512MB RAM)
 ENV NODE_OPTIONS="--max-old-space-size=384"
 
-# Configuración adaptativa de logging (warn para recursos limitados, info para normales)
+# Configuración adaptativa de logging
 ENV logging__level=warn
 ENV logging__rotation__enabled=false
 
-# Pool de DB optimizado para recursos limitados
+# Pool de DB optimizado para recursos limitados y PostgreSQL
 ENV database__pool__min=1
 ENV database__pool__max=3
 ENV database__acquireConnectionTimeout=30000
 
-# Caching agresivo para mejor performance en recursos limitados
+# Caching agresivo para mejor performance
 ENV caching__frontend__maxAge=31536000
 ENV caching__301__maxAge=31536000
 ENV caching__customRedirects__maxAge=31536000
 ENV caching__favicon__maxAge=86400
 
-# Rutas de BD adaptativas: Render usa /opt/render/project/src/ghost-data, local usa /var/lib/ghost/content
-ENV database__connection__filename=${GHOST_DATABASE_PATH:-/var/lib/ghost/content/data/ghost.db}
-
-# Crear estructura de directorios para ambos entornos
+# Crear estructura solo para archivos (imágenes, temas) - BD en Supabase
 RUN mkdir -p /var/lib/ghost/content/data && \
     mkdir -p /var/lib/ghost/content/images && \
     mkdir -p /var/lib/ghost/content/themes && \
-    mkdir -p /var/lib/ghost/content/backups && \
-    mkdir -p /opt/render/project/src/ghost-data/data && \
-    mkdir -p /opt/render/project/src/ghost-data/images && \
-    mkdir -p /opt/render/project/src/ghost-data/themes && \
-    mkdir -p /opt/render/project/src/ghost-data/backups && \
-    chown -R node:node /var/lib/ghost/content /opt/render/project/src/ghost-data 2>/dev/null || true
+    mkdir -p /var/lib/ghost/content/logs && \
+    chown -R node:node /var/lib/ghost/content
 
-# Script de backup inteligente que se adapta al entorno
-COPY <<EOF /usr/local/bin/backup-ghost.sh
+# Script inteligente que detecta Supabase o SQLite (SIN backups para PostgreSQL)
+COPY <<EOF /usr/local/bin/start-ghost.sh
 #!/bin/sh
-# Script de backup universal que detecta el entorno
+echo "=== Ghost Startup - latinhub-blog-db Config ==="
 
-# Detectar si estamos en Render o local
-if [ -d "/opt/render/project/src/ghost-data" ]; then
-    GHOST_DIR="/opt/render/project/src/ghost-data"
-    echo "Entorno: Render"
-else
-    GHOST_DIR="/var/lib/ghost/content"
-    echo "Entorno: Local"
-fi
-
-BACKUP_DIR="\$GHOST_DIR/backups"
-DB_FILE="\$GHOST_DIR/data/ghost.db"
-DATE=\$(date +%Y%m%d_%H%M%S)
-
-# Crear directorio de backup si no existe
-mkdir -p "\$BACKUP_DIR"
-
-# Solo hacer backup si la DB existe y es mayor a 1KB
-if [ -f "\$DB_FILE" ] && [ \$(stat -c%s "\$DB_FILE" 2>/dev/null || stat -f%z "\$DB_FILE" 2>/dev/null || echo 0) -gt 1024 ]; then
-    cp "\$DB_FILE" "\$BACKUP_DIR/ghost_\$DATE.db"
+# Detectar si tenemos configuración de Supabase PostgreSQL
+if [ -n "\$DATABASE_HOST" ] && [ -n "\$DATABASE_PASSWORD" ]; then
+    echo "✅ Supabase PostgreSQL detectado"
+    echo "Host: \$DATABASE_HOST"
+    echo "Database: \$DATABASE_NAME"
+    echo "Project: latinhub-blog-db"
+    echo "📊 Backups: Automáticos en Supabase (no se requieren manuales)"
     
-    # Mantener diferentes cantidades según el entorno
-    if [ -d "/opt/render/project/src/ghost-data" ]; then
-        # En Render FREE: solo 3 backups para ahorrar espacio
-        ls -t "\$BACKUP_DIR"/ghost_*.db | tail -n +4 | xargs rm -f 2>/dev/null || true
-        echo "Backup Render: ghost_\$DATE.db (max 3)"
-    else
-        # En local: 10 backups
-        ls -t "\$BACKUP_DIR"/ghost_*.db | tail -n +11 | xargs rm -f 2>/dev/null || true
-        echo "Backup Local: ghost_\$DATE.db (max 10)"
-    fi
+    # Configurar Ghost para PostgreSQL
+    export database__client=pg
+    export database__connection__host="\$DATABASE_HOST"
+    export database__connection__user="\$DATABASE_USER"
+    export database__connection__password="\$DATABASE_PASSWORD"
+    export database__connection__database="\$DATABASE_NAME"
+    export database__connection__port="\$DATABASE_PORT"
+    export database__connection__ssl="\$DATABASE_SSL"
+    export database__connection__ssl__rejectUnauthorized=false
+    
+    echo "🚀 Iniciando Ghost con Supabase PostgreSQL..."
 else
-    echo "DB no encontrada o muy pequeña, saltando backup"
+    echo "📂 Fallback a SQLite (desarrollo local)"
+    export database__client=sqlite3
+    export database__connection__filename="/var/lib/ghost/content/data/ghost.db"
+    
+    # Crear directorio para SQLite si no existe
+    mkdir -p /var/lib/ghost/content/data
+    echo "⚠️  SQLite: Considera hacer backups manuales para desarrollo"
+    
+    echo "🚀 Iniciando Ghost con SQLite..."
 fi
+
+# Mostrar configuración final
+echo "Cliente DB: \$database__client"
+if [ "\$database__client" = "pg" ]; then
+    echo "PostgreSQL Host: \$database__connection__host"
+    echo "🔒 Datos seguros en Supabase con backups automáticos"
+else
+    echo "SQLite Path: \$database__connection__filename"
+fi
+
+# Iniciar Ghost
+exec node current/index.js
 EOF
 
-RUN chmod +x /usr/local/bin/backup-ghost.sh
+RUN chmod +x /usr/local/bin/start-ghost.sh
 
 # Usar usuario no-root para seguridad
 USER node
@@ -93,8 +108,8 @@ USER node
 # Exponer puerto
 EXPOSE 2368
 
-# Configurar volúmenes para ambos entornos
-VOLUME ["/var/lib/ghost/content", "/opt/render/project/src/ghost-data"]
+# Volumen solo para archivos (imágenes, temas) - BD en Supabase
+VOLUME ["/var/lib/ghost/content"]
 
-# Comando optimizado para iniciar Ghost
-CMD ["node", "current/index.js"]
+# Usar nuestro script de detección automática
+CMD ["/usr/local/bin/start-ghost.sh"]

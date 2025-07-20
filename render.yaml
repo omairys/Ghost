@@ -7,22 +7,25 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: database__client
-        value: sqlite3
-      - key: GHOST_DATABASE_PATH
-        value: /opt/render/project/src/ghost-data/data/ghost.db
-      - key: database__useNullAsDefault
+      # Configuración Supabase PostgreSQL - latinhub-blog-db
+      - key: DATABASE_CLIENT
+        value: pg
+      - key: DATABASE_HOST
+        value: db.pepkpgvnhpqwgwpaiqua.supabase.co
+      - key: DATABASE_USER
+        value: postgres
+      - key: DATABASE_PASSWORD
+        value: YOUR_SUPABASE_PASSWORD_HERE
+      - key: DATABASE_NAME
+        value: postgres
+      - key: DATABASE_PORT
+        value: "5432"
+      - key: DATABASE_SSL
         value: "true"
-      - key: database__debug
-        value: "false"
       - key: mail__transport
         value: Direct
       - key: mail__from
         value: noreply@yourdomain.com
       - key: url
-        value: https://your-site.onrender.com
-    # CRÍTICO: Configuración del disco persistente
-    disk:
-      name: ghost-data
-      mountPath: /opt/render/project/src/ghost-data
-      sizeGB: 1
+        value: https://blog.latinhub.info
+    # NOTA: No necesitamos disco persistente - datos en Supabase PostgreSQL
