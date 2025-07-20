@@ -21,11 +21,11 @@ Solo 4 archivos. Todo lo que necesitas.
 
 ---
 
-## 🚀 Render.com (Producción)
+## 🚀 Render.com (Producción - GRATUITO)
 
 ### 1. Crear Web Service en Render
 - Conecta este repositorio de GitHub
-- Usa: `Dockerfile.render`
+- Usa: `Dockerfile` (detecta automáticamente)
 
 ### 2. Variables de entorno
 ```
@@ -33,9 +33,10 @@ NODE_ENV=production
 url=https://tu-app.onrender.com
 ```
 
-### 3. Crear PostgreSQL Database
-- Conecta la base de datos al Web Service
-- Render agregará `DATABASE_URL` automáticamente
+### 3. ¡NO necesitas base de datos externa!
+- Usa SQLite3 automáticamente
+- El archivo `ghost.db` se crea solo
+- Perfecto para la versión gratuita
 
 ¡Listo!
 
@@ -55,8 +56,9 @@ url=https://tu-app.onrender.com
 
 ## 💡 Diferencias:
 
-| | Local | Render.com |
-|---|-------|------------|
-| **Base de datos** | SQLite | PostgreSQL |
+| | Local | Render.com (Gratuito) |
+|---|-------|----------------------|
+| **Base de datos** | SQLite | SQLite |
 | **Comando** | `./start-ghost.sh start` | Se despliega automático |
 | **URL** | http://localhost:2368 | https://tu-app.onrender.com |
+| **Costo** | Gratis | Gratis |
