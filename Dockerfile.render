@@ -1,0 +1,21 @@
+# Dockerfile para Render.com
+FROM ghost:latest
+
+# Render.com asigna el puerto automáticamente
+ENV NODE_ENV=production
+
+# Configurar Ghost para usar PostgreSQL (Render.com lo proporciona)
+ENV database__client=pg
+ENV database__connection__ssl=true
+ENV database__connection__sslmode=require
+
+# Render.com proporcionará automáticamente:
+# - DATABASE_URL (se parseará automáticamente)
+# - PORT (puerto dinámico)
+
+# Ghost necesita ejecutarse en el puerto que Render asigna
+ENV server__port=$PORT
+ENV server__host=0.0.0.0
+
+# Exponer el puerto para documentación (Render ignora esto)
+EXPOSE $PORT
