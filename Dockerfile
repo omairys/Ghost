@@ -13,8 +13,8 @@ ENV mail__transport=Direct
 ENV mail__from=noreply@yourdomain.com
 
 # Auto-detectar limitaciones de recursos y optimizar automáticamente
-# Si hay menos de 600MB de RAM disponible, aplicar optimizaciones para Render FREE
-ENV NODE_OPTIONS="--max-old-space-size=384 --optimize-for-size"
+# Optimizado para Render FREE (0.1 CPU, 512MB RAM)
+ENV NODE_OPTIONS="--max-old-space-size=384"
 
 # Configuración adaptativa de logging (warn para recursos limitados, info para normales)
 ENV logging__level=warn
