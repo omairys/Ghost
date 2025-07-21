@@ -60,14 +60,14 @@ RUN mkdir -p /var/lib/ghost/content/data && \
 RUN mkdir -p /home/node/bin
 COPY <<EOF /home/node/bin/start-ghost.sh
 #!/bin/sh
-echo "=== Ghost Startup - latinhub-blog-db Config ==="
+echo "=== Ghost Startup - ghostdb Config ==="
 
 # Detectar si tenemos configuración de Supabase PostgreSQL
 if [ -n "\$DATABASE_HOST" ] && [ -n "\$DATABASE_PASSWORD" ]; then
     echo "✅ Supabase PostgreSQL detectado"
     echo "Host: \$DATABASE_HOST"
     echo "Database: \$DATABASE_NAME"
-    echo "Project: latinhub-blog-db"
+    echo "Project: ghostdb"
     echo "📊 Backups: Automáticos en Supabase (no se requieren manuales)"
 
     # Configurar Ghost para PostgreSQL
