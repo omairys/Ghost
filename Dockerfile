@@ -111,11 +111,11 @@ EOF
 RUN chmod +x /home/node/bin/start-ghost.sh && \
     chown -R node:node /home/node/bin
 
-# Usar usuario no-root para seguridad
-USER node
 
 # Usar usuario no-root para seguridad
 USER node
+
+# IMPORTANTE: Si tienes errores ENETUNREACH, usa la dirección IPv4 de tu base de datos Supabase en DATABASE_HOST
 
 # Exponer puerto
 EXPOSE 2368
