@@ -57,7 +57,9 @@ RUN mkdir -p /var/lib/ghost/content/data && \
     chown -R node:node /var/lib/ghost/content
 
 # Script inteligente que detecta Supabase o SQLite (SIN backups para PostgreSQL)
-COPY <<EOF /usr/local/bin/start-ghost.sh
+# Crear en directorio accesible para usuario node
+RUN mkdir -p /home/node/bin
+COPY <<EOF /home/node/bin/start-ghost.sh
 #!/bin/sh
 echo "=== Ghost Startup - latinhub-blog-db Config ==="
 
@@ -105,7 +107,8 @@ fi
 exec node current/index.js
 EOF
 
-RUN chmod +x /usr/local/bin/start-ghost.sh
+RUN chmod +x /home/node/bin/start-ghost.sh && \
+    chown -R node:node /home/node/bin
 
 # Usar usuario no-root para seguridad
 USER node
@@ -116,5 +119,5 @@ EXPOSE 2368
 # Volumen solo para archivos (imágenes, temas) - BD en Supabase
 VOLUME ["/var/lib/ghost/content"]
 
-# Usar nuestro script de detección automática
-CMD ["/usr/local/bin/start-ghost.sh"]
+# Usar nuestro script de detección automática desde directorio del usuario
+CMD ["/home/node/bin/start-ghost.sh"]
