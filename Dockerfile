@@ -2,6 +2,11 @@
 # Funciona con Supabase (Render FREE) y SQLite (desarrollo local)
 FROM ghost:alpine
 
+# Instalar driver de PostgreSQL para conexión a Supabase
+USER root
+RUN npm install pg --save
+USER node
+
 # Variables de entorno base - Detección automática de DB
 ENV NODE_ENV=production
 
