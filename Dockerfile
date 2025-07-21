@@ -3,9 +3,9 @@
 FROM ghost:alpine
 
 # Instalar driver de PostgreSQL para conexión a Supabase
+
 USER root
 RUN npm install pg --save
-USER node
 
 # Variables de entorno base - Detección automática de DB
 ENV NODE_ENV=production
@@ -70,7 +70,7 @@ if [ -n "\$DATABASE_HOST" ] && [ -n "\$DATABASE_PASSWORD" ]; then
     echo "Database: \$DATABASE_NAME"
     echo "Project: latinhub-blog-db"
     echo "📊 Backups: Automáticos en Supabase (no se requieren manuales)"
-    
+
     # Configurar Ghost para PostgreSQL
     export database__client=pg
     export database__connection__host="\$DATABASE_HOST"
@@ -80,17 +80,17 @@ if [ -n "\$DATABASE_HOST" ] && [ -n "\$DATABASE_PASSWORD" ]; then
     export database__connection__port="\$DATABASE_PORT"
     export database__connection__ssl="\$DATABASE_SSL"
     export database__connection__ssl__rejectUnauthorized=false
-    
+
     echo "🚀 Iniciando Ghost con Supabase PostgreSQL..."
 else
     echo "📂 Fallback a SQLite (desarrollo local)"
     export database__client=sqlite3
     export database__connection__filename="/var/lib/ghost/content/data/ghost.db"
-    
+
     # Crear directorio para SQLite si no existe
     mkdir -p /var/lib/ghost/content/data
     echo "⚠️  SQLite: Considera hacer backups manuales para desarrollo"
-    
+
     echo "🚀 Iniciando Ghost con SQLite..."
 fi
 
@@ -107,8 +107,12 @@ fi
 exec node current/index.js
 EOF
 
+
 RUN chmod +x /home/node/bin/start-ghost.sh && \
     chown -R node:node /home/node/bin
+
+# Usar usuario no-root para seguridad
+USER node
 
 # Usar usuario no-root para seguridad
 USER node
