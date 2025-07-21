@@ -17,15 +17,14 @@ ENV database__connection__user=${DATABASE_USER:-postgres}
 ENV database__connection__password=${DATABASE_PASSWORD:-}
 ENV database__connection__database=${DATABASE_NAME:-postgres}
 ENV database__connection__port=${DATABASE_PORT:-5432}
-ENV database__connection__ssl=${DATABASE_SSL:-true}
+ENV database__connection__ssl='{"rejectUnauthorized":false}'
 
 # Fallback a SQLite para desarrollo local
 ENV database__connection__filename=${GHOST_DATABASE_PATH:-/var/lib/ghost/content/data/ghost.db}
 ENV database__useNullAsDefault=true
 ENV database__debug=false
 
-# Configuración SSL para Supabase
-ENV database__connection__ssl__rejectUnauthorized=false
+
 
 # Configuración de correo para evitar warnings
 ENV mail__transport=Direct
@@ -78,8 +77,7 @@ if [ -n "\$DATABASE_HOST" ] && [ -n "\$DATABASE_PASSWORD" ]; then
     export database__connection__password="\$DATABASE_PASSWORD"
     export database__connection__database="\$DATABASE_NAME"
     export database__connection__port="\$DATABASE_PORT"
-    export database__connection__ssl="\$DATABASE_SSL"
-    export database__connection__ssl__rejectUnauthorized=false
+    export database__connection__ssl='{"rejectUnauthorized":false}'
 
     echo "🚀 Iniciando Ghost con Supabase PostgreSQL..."
 else
