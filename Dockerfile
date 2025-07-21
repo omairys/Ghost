@@ -31,8 +31,8 @@ ENV database__connection__ssl__rejectUnauthorized=false
 ENV mail__transport=Direct
 ENV mail__from=noreply@yourdomain.com
 
-# Optimizado para Render FREE (0.1 CPU, 512MB RAM)
-ENV NODE_OPTIONS="--max-old-space-size=384"
+# Optimizado para Render FREE (0.1 CPU, 512MB RAM) y forzar IPv4 para conexiones DB
+ENV NODE_OPTIONS="--dns-result-order=ipv4first --max-old-space-size=384"
 
 # Configuración adaptativa de logging
 ENV logging__level=warn
